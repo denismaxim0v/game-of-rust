@@ -5,6 +5,7 @@ pub enum Cell {
     Dead = 0,
     Alive = 1,
 }
+
 pub struct Universe {
     width: u32,
     height: u32,
@@ -19,6 +20,10 @@ impl Universe {
             width,
             cells,
         }
+    }
+
+    fn get_index(&self, row: u32, col: u32) -> usize {
+        (row * self.width + col) as usize
     }
 }
 
@@ -54,7 +59,17 @@ impl Engine {
             event_pump,
         })
     }
+
+    pub fn run(&mut self) {
+        // TODO
+        ()
+    }
 }
+
 fn main() {
-    println!("Hello, world!");
+    let mut engine = match Engine::new() {
+        Ok(engine) => engine,
+        Err(error) => panic!("Engine Failed: {:?}", error)
+    };
+    engine.run();
 }
