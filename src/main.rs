@@ -21,25 +21,13 @@ pub struct Universe {
     x_offset: i32,
     y_offset: i32,
     scale: f32,
-    // Spacing between cells in pixels
     spacing: u32,
-    // Leg size of a cell square
     leg_size: u32,
 
 }
 impl Universe {
     
-    /// create a new universe populated with dead cells that is height x width big
-    /// 
-    /// # Arguments
-    /// 
-    /// * `height` - An unsigned 32 bit int representing the height of the universe
-    /// * `width` - An unsigned 32 bit int representing the width of the universe
-    /// ```
-    /// use sdl_game_of_life::Universe;
-    /// let universe = Universe::new(64, 64);
-    /// ```
-    pub fn new(height: u32, width: u32) -> Universe  {
+        pub fn new(height: u32, width: u32) -> Universe  {
         let cells = vec![Cell::Dead; (width * height) as usize];
         
         Universe{
@@ -59,7 +47,6 @@ impl Universe {
         (row * self.width + col) as usize
     }
 
-    /// get the number of live neighbors
     fn get_live_neighbors(&self, row: u32, col: u32) -> u8 {
         let mut live_count = 0;
         
@@ -80,7 +67,6 @@ impl Universe {
         live_count
     } 
 
-    /// Moves the state of the game by one tick
     pub fn tick(& mut self) {
 
         match self.running {
@@ -156,10 +142,8 @@ impl Universe {
     }
 
     fn get_by_coordinates(&self, x: i32, y: i32) -> Option<usize> {
-        // TODO use dynamic cell size to get coordinates when scaling
         let x_size = ((self.leg_size + self.spacing * 2) as f32 * self.scale) as i32;
         let y_size = ((self.leg_size + self.spacing * 2) as f32 * self.scale) as i32;
-        // Take the cell size and spacing, multiply by it's index
         
         let y_index = (((y - self.y_offset) as f32) / (y_size as f32)).floor();
         let x_index = (((x - self.x_offset) as f32) / (x_size as f32)).floor();
@@ -209,14 +193,12 @@ impl Engine {
         let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
 
-        let mut window = match video_subsystem.window("SDL Game of Life", 1000, 1000)
+        let mut window = match video_subsystem.window("SDL Game of Life", 720, 480)
                 .position_centered()
                 .build() {
             Ok(sub_system) => sub_system,
             Err(e) => return Err(format!("Could not build window: {:?}", e))
         };
-
-        window.set_fullscreen(sdl2::video::FullscreenType::Desktop)?;
 
         let canvas = match window.into_canvas().build() {
             Ok(canvas) => canvas,
@@ -232,7 +214,6 @@ impl Engine {
         })
     }
 
-    // Starts the game loop
     pub fn run(&mut self) {
         self.canvas.set_draw_color(Color::RGB(120, 120, 120));
         self.canvas.clear();
@@ -274,7 +255,6 @@ impl Engine {
                             _ => {}
                         }
                     },
-                    // Enable dragging, cell revive mode, and cell kill mode.
                     Event::MouseButtonDown {mouse_btn, x, y, ..} => {
                         match mouse_btn {
                             MouseButton::Left => {
@@ -292,7 +272,6 @@ impl Engine {
                         previous_mouse_pos_x = x;
                         previous_mouse_pos_y = y;
                     },
-                    // Disable dragging, cell revive mode, and cell kill mode.
                     Event::MouseButtonUp {mouse_btn, ..} => {
                         match mouse_btn {
                             MouseButton::Left => mouse_setting = false,
@@ -301,7 +280,6 @@ impl Engine {
                             _ => {}
                         };
                     },
-                    // Scale the board with scroll wheel
                     Event::MouseWheel {y, ..} => {
                         match y {
                             1 => self.universe.increment_scale(0.1),
@@ -310,7 +288,6 @@ impl Engine {
                         };
                     },
 
-                    // Apply motion event like dragging, cell batch revive, cell batch kill.
                     Event::MouseMotion {x, y, ..} => {
                         if mouse_dragging {
                             let x_dif = x - previous_mouse_pos_x;
